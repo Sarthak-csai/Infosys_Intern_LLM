@@ -1,8 +1,6 @@
-
-import base64
-import os
 from google import genai
 from google.genai import types
+import json
 
 
 GEMINI_API_KEY="AIzaSyCAAb6uwoCG-yvedBqze6sppF62d6GHQbA"
@@ -75,13 +73,11 @@ def execute_gemini(prompt):
 
     return result.text
 
-
-def execute_gemini_for_tweet_creation(prompt): #INFO: THIS IS FOR TWEET CREATION
+def execute_gemini_for_tweet_creation(prompt, model_name = "gemini-2.5-flash-lite"): #INFO: THIS IS FOR TWEET CREATION
     client = genai.Client(
         api_key=GEMINI_API_KEY,
     )
 
-    model = "gemini-2.5-flash-lite"
     contents = [
         types.Content( # user prompt (same as chat input)
             role="user",
@@ -116,9 +112,47 @@ def execute_gemini_for_tweet_creation(prompt): #INFO: THIS IS FOR TWEET CREATION
     )
 
     result = client.models.generate_content(
-        model=model,
+        model=model_name,
         contents=contents,
         config=generate_content_config,
     )
 
-    return result.text
+    return json.loads(result.text)
+
+def execute_gemini_for_tweets_comparison(prompt: str, model_name = "gemini-2.5-flash") -> str:
+    """
+    Executes Gemini to generate two tweets and a structured comparison.
+    Assumes the prompt includes instructions for tweet generation and performance analysis.
+    """
+    client = genai.Client(api_key=GEMINI_API_KEY)
+
+    contents = [
+        types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=prompt)],
+        ),
+    ]
+
+    generate_content_config = types.GenerateContentConfig(
+        thinking_config=types.ThinkingConfig(thinking_budget=0),
+        response_mime_type="application/json",
+        response_schema=genai.types.Schema(
+            type=genai.types.Type.OBJECT,
+            required=["tweet_a", "tweet_b", "tweet_a_vs_tweet_b", "prediction", "explanation"],
+            properties={
+                "tweet_a": genai.types.Schema(type=genai.types.Type.STRING),
+                "tweet_b": genai.types.Schema(type=genai.types.Type.STRING),
+                "tweet_a_vs_tweet_b": genai.types.Schema(type=genai.types.Type.STRING),
+                "prediction": genai.types.Schema(type=genai.types.Type.STRING),
+                "explanation": genai.types.Schema(type=genai.types.Type.STRING),
+            },
+        ),
+    )
+
+    result = client.models.generate_content(
+        model=model_name,
+        contents=contents,
+        config=generate_content_config,
+    )
+
+    return json.loads(result.text)
