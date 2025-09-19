@@ -15,22 +15,26 @@ def get_top5(analysed_tweets, eng_type):
     # Return as list of dicts
     return top5_df.to_dict(orient='records')
 
-def create_tweet(analysed_tweets):
+def create_tweet(prompt):
+
+    with open('analyzed_tweets.json') as file:
+        analysed_tweets = json.load(file)
+
     engagement_type = "like"  # Example: could be 'like', 'retweet', 'reply', etc.
     top5_tweets = get_top5(analysed_tweets, engagement_type)
 
-    if not top5_tweets:
+    if not top5_tweets or prompt=='':
         print(f"No tweets found for engagement type '{engagement_type}'.")
-        return
+        return None
     
-    # prompt = "Write a tweet announcing the newly released iPhone 17 Pro Max and the upcoming iPhone 18 Pro, highlighting their physically moving camera zoom feature. Make the tweet appealing to a camera-enthusiast audience. mention Iphones too."
-    prompt = """
-        Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
+    if prompt=='':
+        prompt = """
+            Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
 
-        Make the tweet appeal to tech-savvy professionals, developers, and productivity enthusiasts who crave smarter tools and seamless integration. Emphasize Copilot’s ability to save time, reduce cognitive load, and unlock creative potential.
+            Make the tweet appeal to tech-savvy professionals, developers, and productivity enthusiasts who crave smarter tools and seamless integration. Emphasize Copilot’s ability to save time, reduce cognitive load, and unlock creative potential.
 
-        The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
-"""
+            The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
+            """
     system_prompt = """
         Create an engaging twitter tweet for Microsoft company.
         PROMPT: {prompt}
@@ -59,6 +63,8 @@ def create_tweet(analysed_tweets):
 
     with open("generated_tweet.json", 'a') as file:
         json.dump(out,file,indent=4)
+
+    return out
 
 def compare_tweets(analysed_tweets):
     engagement_type = "like"  # Can be changed to 'retweet', 'reply', etc.
@@ -164,7 +170,7 @@ def gemini_gpt_tweets_creation(analysed_tweets):
             "openai": openai_dict
         }, file, indent=4)
 
-def create_compare_tweets_with_gemini_models(analysed_tweets):
+def create_compare_tweets_with_gemini_models(prompt):
     """
     Generate and compare tweets from two different Gemini models using top-performing tweet examples.
 
@@ -173,6 +179,9 @@ def create_compare_tweets_with_gemini_models(analysed_tweets):
     - output_path (str): File path to append comparison results.
     """
 
+    with open('analyzed_tweets.json') as file:
+        analysed_tweets = json.load(file)
+
     engagement_type = "like"
     top5_tweets = get_top5(analysed_tweets, engagement_type)
 
@@ -180,13 +189,14 @@ def create_compare_tweets_with_gemini_models(analysed_tweets):
         print(f"No tweets found for engagement type '{engagement_type}'.")
         return
 
-    prompt = """
-        Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
+    if prompt=='':
+        prompt = """
+            Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
 
-        Make the tweet appeal to tech-savvy professionals, developers, and productivity enthusiasts who crave smarter tools and seamless integration. Emphasize Copilot’s ability to save time, reduce cognitive load, and unlock creative potential.
+            Make the tweet appeal to tech-savvy professionals, developers, and productivity enthusiasts who crave smarter tools and seamless integration. Emphasize Copilot’s ability to save time, reduce cognitive load, and unlock creative potential.
 
-        The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
-    """
+            The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
+            """
 
     system_prompt = f"""
         Create an engaging twitter tweet for Microsoft company.
@@ -278,6 +288,8 @@ def create_compare_tweets_with_gemini_models(analysed_tweets):
             }
         }, file, indent=4)
 
+    return output
+'''
 if __name__ == '__main__':
     with open('analyzed_tweets.json') as file:
         data = json.load(file)
@@ -286,3 +298,4 @@ if __name__ == '__main__':
         # compare_tweets(data)
         # create_and_compare_tweets(data)
         create_compare_tweets_with_gemini_models(data)
+'''
