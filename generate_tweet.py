@@ -35,6 +35,7 @@ def create_tweet(prompt):
 
             The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
             """
+    # Few-Shot Prompting
     system_prompt = """
         Create an engaging twitter tweet for Microsoft company.
         PROMPT: {prompt}
@@ -50,7 +51,7 @@ def create_tweet(prompt):
     out = execute_gemini_for_tweet_creation(prompt=system_prompt)
 
     # out = compare_tweets_from_two_models(prompt=system_prompt)
-
+    '''
     tweet = out['tweet']
     prediction = out['prediction']
     explanation = out['explanation']
@@ -63,7 +64,8 @@ def create_tweet(prompt):
 
     with open("generated_tweet.json", 'a') as file:
         json.dump(out,file,indent=4)
-
+    '''
+    
     return out
 
 def compare_tweets(analysed_tweets):
@@ -248,7 +250,8 @@ def create_compare_tweets_with_gemini_models(prompt):
     tweet_comparison = output.get("tweet_a_vs_tweet_b", "Comparison not available.")
     prediction = output.get("prediction", "unknown")
     explanation = output.get("explanation", "Failed to parse explanation.")
-
+    
+    '''
     # Print comparison results
     print("\n🔵 Gemini Model A Tweet:")
     print("Tweet:", tweet_a)
@@ -287,8 +290,29 @@ def create_compare_tweets_with_gemini_models(prompt):
                 "explanation": explanation
             }
         }, file, indent=4)
+    '''
+    out = {
+    "model_a": {
+        "name": model_a,
+        "tweet": tweet_a,
+        "prediction": prediction_a,
+        "explanation": explanation_a
+    },
+    "model_b": {
+        "name": model_b,
+        "tweet": tweet_b,
+        "prediction": prediction_b,
+        "explanation": explanation_b
+    },
+    "comparison": {
+        "name": model_comp,
+        "tweet_a_vs_tweet_b": tweet_comparison,
+        "prediction": prediction,
+        "explanation": explanation
+    }
+}
 
-    return output
+    return out
 '''
 if __name__ == '__main__':
     with open('analyzed_tweets.json') as file:

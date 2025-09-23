@@ -29,6 +29,7 @@ def compare_tweets():
     # Modify your compare function to return results as a dict,
     # or accumulate necessary output and return it here.
     output = create_compare_tweets_with_gemini_models(data['prompt'])
+
     if output is None:
         return jsonify({"error": "Could not perform tweet comparison"}), 500
 

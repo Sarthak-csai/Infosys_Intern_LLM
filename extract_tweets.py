@@ -1,4 +1,3 @@
-from run_prompt import execute_gemini
 from x_api import twitterClient
 import json
 from datetime import datetime

@@ -96,7 +96,7 @@ document.getElementById('compareForm').onsubmit = async function(e) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ prompt: comparePromptTextarea.value })  // << Send plain prompt
-        });
+        }); 
         const data = await response.json();
         btn.disabled = false;
         btn.textContent = "🤝 Compare Tweets";

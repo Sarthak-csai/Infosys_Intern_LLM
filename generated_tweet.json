@@ -46,4 +46,12 @@
     "tweet": "Unlock your creative potential with the power of Microsoft Surface! \ud83d\ude80 From stunning visuals to seamless multitasking, our devices are built to inspire your next big idea. #MicrosoftSurface #Creativity #Innovation",
     "prediction": "Positive",
     "explanation": "This tweet will perform well because it highlights a key benefit (creativity, inspiration) and a specific product line (Surface) that resonates with a broad audience. The use of emojis (\ud83d\ude80) and relevant hashtags (#MicrosoftSurface, #Creativity, #Innovation) increases visibility and engagement, similar to the successful examples provided. It focuses on empowerment and aspiration, which are strong drivers of user interaction."
+}{
+    "tweet": "Unlock the future of work with Microsoft Azure! \ud83d\ude80 Our cutting-edge cloud solutions empower your business to innovate faster, scale smarter, and achieve more. Discover the possibilities: [Link to Azure page] #MicrosoftAzure #CloudComputing #DigitalTransformation #Innovation",
+    "prediction": "High Engagement",
+    "explanation": "This tweet is predicted to have high engagement because it uses strong, action-oriented language ('Unlock the future', 'innovate faster', 'scale smarter', 'achieve more') and relevant, trending hashtags (#MicrosoftAzure, #CloudComputing, #DigitalTransformation, #Innovation). The rocket emoji adds visual appeal and conveys excitement. It directly addresses business benefits, a key driver for engagement in the B2B tech space, similar to how the example tweets highlight user benefits and exciting new features."
+}{
+    "tweet": "Unlock new possibilities with the power of Microsoft Azure! \ud83d\ude80 From AI to hybrid cloud, we're helping businesses innovate faster and achieve more. Discover what's next. #MicrosoftAzure #CloudComputing #Innovation",
+    "prediction": "Positive",
+    "explanation": "This tweet is predicted to perform well due to its strong call to action ('Unlock new possibilities,' 'Discover what's next'), relevant and trending hashtags (#MicrosoftAzure, #CloudComputing, #Innovation), and use of an emoji (\ud83d\ude80) that conveys excitement and progress. It aligns with the engaging and forward-looking tone of the example tweets, focusing on business benefits and technological advancement, which resonates well with a professional audience on Twitter."
 }
