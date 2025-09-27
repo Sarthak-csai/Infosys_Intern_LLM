@@ -116,7 +116,7 @@ X_BEARER_TOKEN=your-twitter-bearer-token
 
 ## 📄 License
 
-This project is licensed under the [MIT License](LICENSE.txt).
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
