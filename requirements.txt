@@ -1,0 +1,14 @@
+# Flask is used to build the web interface for prompt-driven tweet generation and benchmarking
+flask
+
+# Pandas helps with data manipulation and analysis, especially for benchmarking logs and tweet datasets
+pandas
+
+# Tweepy is used to interact with the Twitter API for tweet extraction and posting
+tweepy
+
+# python-dotenv loads environment variables from a .env file for secure API key management
+python-dotenv
+
+# google-generativeai provides access to Gemini models for prompt-based tweet generation and analysis
+google-generativeai
