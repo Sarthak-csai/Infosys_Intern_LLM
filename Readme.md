@@ -6,39 +6,46 @@ Market Content Optimizer is an open-source tool that leverages the **X (Twitter)
 
 ## 🚀 Features
 
-- **Generate tweets** using few-shot learning, with your brand’s top-performing tweet examples.
-- **Compare tweets** from different AI models, with predicted performance and detailed explanations.
-- **Sentiment & engagement analysis** using Gemini API.
-- **Modern, responsive UX** (Flask + JS/CSS).
-- **Modular code** for easy extension.
+- **Generate tweets** using few-shot learning, guided by your brand’s top-performing tweet examples.
+- **Compare tweets** from different AI models, with AI-predicted engagement and detailed explanations.
+- **Sentiment & engagement analysis** tailoring results to your audience.
+- **Modern, responsive UX:** Built with Flask, JS, and dynamic CSS.
+- **Modular, extensible code** for research or production use.
 
 ---
 
 ## 🌱 Getting Started
 
-### 1. **Clone the Repository**
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/market-content-optimizer.git
-cd market-content-optimizer
+git clone https://github.com/Sarthak-csai/Infosys_Intern_LLM
+cd Infosys_Intern_LLM
 ```
 
----
+### 2. Environment Configuration
 
-### 2. **Set up Environment**
+Market Content Optimizer requires credentials for the X (Twitter) API and the Gemini API.
 
-- Create a `.env` file with your API keys:
+**Create a file named `.env` in the project root directory with the following:**
 
 ```env
-GEMINI_API_KEY=your-gemini-api-key
-X_BEARER_TOKEN=your-twitter-bearer-token
+# ==== X (Twitter) API credentials ====
+API_KEY=your_twitter_api_key
+API_SECRET_KEY=your_twitter_api_secret_key
+ACCESS_TOKEN=your_twitter_access_token
+ACCESS_TOKEN_SECRET=your_twitter_access_token_secret
+BEARER_TOKEN=your_twitter_bearer_token
+
+# ==== Gemini API ====
+GEMINI_API_KEY=your_gemini_api_key
 ```
+- Never commit your real `.env` file or secrets to GitHub.
+- See `.env.example` for a template.
 
-- Or export variables before running.
+### 3. Install Dependencies
 
----
-
-### 3. **Install Python Dependencies**
+All Python dependencies are included in `requirements.txt`:
 
 ```bash
 python -m venv venv
@@ -46,62 +53,29 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-You’ll need:
-
-- `flask`
-- `requests`
-- `python-dotenv`
-- Gemini client library
-
----
-
-### 4. **Run the Web App**
+### 4. Run the Web App
 
 ```bash
 python app.py
 ```
 
-Visit [http://localhost:5000](http://localhost:5000) and try it!
+Go to [http://localhost:5000](http://localhost:5000) in your browser.
 
 ---
 
-### 5. **Usage**
+## 💻 Usage
 
-- Use the **Generate Tweet** tab to create a new, engaging tweet.
-- Use the **Compare Tweets** tab to see two model outputs with clear, AI explanations and a predicted winner.
+- Use the **Generate Tweet** tab to create highly engaging, on-brand tweets.
+- Use the **Compare Tweets** tab to see two model outputs side-by-side, with AI-powered analysis and prediction of the winner.
 
 ---
 
 ## 🧠 How It Works
 
-1. Uses the **X API** to get real tweets and engagement data for your brand (Twitter handle).
-2. Analyzes tweets using the **Gemini API** for sentiment, keywords, and engagement scores.
-3. Collects top-performing tweets as few-shot examples for new generations.
-4. When you submit a new prompt, Market Content Optimizer uses these examples to guide the Gemini model to generate and/or compare tweets, producing outputs and AI-driven explanations that are brand-authentic and optimized for engagement.
-
----
-
-## 🛠️ Code Example: Gemini Prompt
-
-```python
-def execute_gemini(prompt: str):
-    import google.ai.generativelanguage as genai
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-    response = client.generate_content(prompt=prompt)
-    return response.text  # Or adapt to your Gemini setup
-```
-
----
-
-## ⚙️ Configuration
-
-- Set `GEMINI_API_KEY` (for Gemini API) and `X_BEARER_TOKEN` (for Twitter API v2) in `.env` or export them in your shell.
-- Example `.env` file:
-
-```env
-GEMINI_API_KEY=your-gemini-api-key
-X_BEARER_TOKEN=your-twitter-bearer-token
-```
+1. Collects tweets and engagement data for your brand using the **X API**.
+2. Analyzes tweets with the **Gemini API** for sentiment, keywords, and engagement insights.
+3. Selects your brand’s top-performing tweets as few-shot examples.
+4. Uses these examples to guide the Gemini model to generate and compare tweets specifically tuned for your brand voice and audience.
 
 ---
 
@@ -110,7 +84,7 @@ X_BEARER_TOKEN=your-twitter-bearer-token
 1. Fork the repository
 2. Make a branch (`git checkout -b feature/my-feature`)
 3. Commit your changes
-4. Push & open a Pull Request!
+4. Push and open a Pull Request!
 
 ---
 
@@ -120,18 +94,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## 🙋 FAQ
-
-**Q: Can I use this for brands besides Microsoft?**  
-A: Yes! Change the Twitter handle when extracting tweets.
-
-**Q: Can I add more social media platforms?**  
-A: Definitely—PRs welcome!
-
----
-
 ## 📫 Questions?
 
 Open an [issue](https://github.com/Sarthak-csai/Infosys_Intern_LLM/issues) or submit a [pull request](https://github.com/Sarthak-csai/Infosys_Intern_LLM/pulls).
-
----
