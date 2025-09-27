@@ -6,12 +6,11 @@ Market Content Optimizer is an open-source tool that leverages the **X (Twitter)
 
 ## 🚀 Features
 
-- **Extract tweets** and metrics from any X (Twitter) handle with the X API.
-- **Analyze sentiment & engagement** of tweets using Gemini API.
-- **Few-shot generation**: Contextualizes new tweets with your brand’s real, top-performing examples.
-- **Compare tweets** from different AI models and get predicted engagement.
+- **Generate tweets** using few-shot learning, with your brand’s top-performing tweet examples.
+- **Compare tweets** from different AI models, with predicted performance and detailed explanations.
+- **Sentiment & engagement analysis** using Gemini API.
 - **Modern, responsive UX** (Flask + JS/CSS).
-- Fully modular for easy extension.
+- **Modular code** for easy extension.
 
 ---
 
@@ -56,44 +55,7 @@ You’ll need:
 
 ---
 
-### 4. **Extract and Analyze Tweets**
-
-Example: Save as `extract_and_analyze.py`
-```python
-import os, json, requests
-from run_prompt import execute_gemini
-
-BEARER_TOKEN = os.environ["X_BEARER_TOKEN"]
-
-def get_tweets(username, n=50):
-    url = f"https://api.twitter.com/2/tweets/search/recent?query=from:{username}&tweet.fields=public_metrics&max_results={n}"
-    headers = {"Authorization": f"Bearer {BEARER_TOKEN}"}
-    resp = requests.get(url, headers=headers)
-    return resp.json().get("data", [])
-
-tweets = get_tweets("Microsoft")
-
-with open("extracted_tweets.json", "w") as f:
-    json.dump(tweets, f, indent=2)
-
-analyzed = []
-for tweet in tweets:
-    prompt = f"""Tweet: {tweet["text"]}
-like_count: {tweet["public_metrics"]["like_count"]}
-retweet_count: {tweet["public_metrics"]["retweet_count"]}
-reply_count: {tweet["public_metrics"]["reply_count"]}
-Read the tweet with regard to its public reception and provide keywords and sentiment analysis score"""
-    result = execute_gemini(prompt)   # Implement this to call Gemini API
-    out = json.loads(result)
-    out["tweet"] = tweet["text"]
-    analyzed.append(out)
-with open("analyzed_tweets.json", "w") as f:
-    json.dump(analyzed, f, indent=2)
-```
-
----
-
-### 5. **Run the Web App**
+### 4. **Run the Web App**
 
 ```bash
 python app.py
@@ -103,7 +65,7 @@ Visit [http://localhost:5000](http://localhost:5000) and try it!
 
 ---
 
-### 6. **Usage**
+### 5. **Usage**
 
 - Use the **Generate Tweet** tab to create a new, engaging tweet.
 - Use the **Compare Tweets** tab to see two model outputs with clear, AI explanations and a predicted winner.
@@ -112,11 +74,10 @@ Visit [http://localhost:5000](http://localhost:5000) and try it!
 
 ## 🧠 How It Works
 
-1. Extract tweets with full engagement data via the **X API**.
-2. Analyze sentiment, keywords, and engagement scores with the **Gemini API**.
-3. Collect top-performing tweets as few-shot examples.
-4. Use few-shot prompting to generate and compare new tweets for any product or campaign.
-5. Get detailed, AI-powered analysis and winner prediction for head-to-head comparisons.
+1. Uses the **X API** to get real tweets and engagement data for your brand (Twitter handle).
+2. Analyzes tweets using the **Gemini API** for sentiment, keywords, and engagement scores.
+3. Collects top-performing tweets as few-shot examples for new generations.
+4. When you submit a new prompt, Market Content Optimizer uses these examples to guide the Gemini model to generate and/or compare tweets, producing outputs and AI-driven explanations that are brand-authentic and optimized for engagement.
 
 ---
 
@@ -155,7 +116,7 @@ X_BEARER_TOKEN=your-twitter-bearer-token
 
 ## 📄 License
 
-MIT
+This project is licensed under the [MIT License](LICENSE.txt).
 
 ---
 
@@ -177,10 +138,9 @@ Open an [issue](https://github.com/yourusername/market-content-optimizer/issues)
 
 **Market Content Optimizer**  
 *Create and compare tweets that engage—built on real data, guided by AI!*
-
 ```
 
 ---
 
-✔️ This README is ready to drop into your repo using VS Code.  
-Let me know if you want starter files, logo, or Open Graph badges!
+> This `README.md` is ready to drop into your repo as-is.  
+> Let me know if you’d like even more brevity, or links to badges/logo!
