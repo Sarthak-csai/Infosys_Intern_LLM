@@ -1,42 +1,68 @@
 import json
 import pandas as pd
-from run_prompt import execute_gemini_for_tweet_creation,execute_gemini_for_tweets_comparison
+from run_prompt import execute_gemini_for_tweet_creation, execute_gemini_for_tweets_comparison
 from run_gpt import execute_gpt_for_tweet_creation
+from threading import Thread
 
 def get_top5(analysed_tweets, eng_type):
+    """
+    Filters and returns the top 5 tweets based on a specific engagement type.
+
+    Parameters:
+        analysed_tweets (list): List of tweet dictionaries with engagement data.
+        eng_type (str): Engagement type to filter by (e.g., 'like', 'retweet').
+
+    Returns:
+        list: Top 5 tweets sorted by engagement_score.
+    """
     df = pd.DataFrame(analysed_tweets)
 
-    # Filter by engagement type
+    # Filter tweets by the specified engagement type
     filtered_df = df[df['engagement_type'] == eng_type]
 
-    # Get top 5 by engagement_score
+    # Select top 5 tweets with highest engagement score
     top5_df = filtered_df.nlargest(n=5, columns=['engagement_score'])
 
-    # Return as list of dicts
+    # Convert DataFrame to list of dictionaries
     return top5_df.to_dict(orient='records')
 
 def create_tweet(prompt):
+    """
+    Generates a tweet using a few-shot prompt strategy based on top-performing tweets.
 
+    Parameters:
+        prompt (str): The core prompt describing the tweet to be generated.
+
+    Returns:
+        dict: Output from the Gemini model containing the generated tweet and analysis.
+    """
+    # Load previously analyzed tweets from JSON file
     with open('analyzed_tweets.json') as file:
         analysed_tweets = json.load(file)
 
-    engagement_type = "like"  # Example: could be 'like', 'retweet', 'reply', etc.
+    # Define the engagement type to filter by
+    engagement_type = "like"  # Can be changed to 'retweet', 'reply', etc.
+
+    # Get top 5 tweets based on engagement type
     top5_tweets = get_top5(analysed_tweets, engagement_type)
 
-    if not top5_tweets or prompt=='':
+    # Handle edge cases: no top tweets or empty prompt
+    if not top5_tweets or prompt == '':
         print(f"No tweets found for engagement type '{engagement_type}'.")
         return None
-    
-    if prompt=='':
+
+    # If prompt is empty, use a default prompt about Microsoft 365 Copilot
+    if prompt == '':
         prompt = """
             Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
 
             Make the tweet appeal to tech-savvy professionals, developers, and productivity enthusiasts who crave smarter tools and seamless integration. Emphasize Copilot’s ability to save time, reduce cognitive load, and unlock creative potential.
 
             The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
-            """
-    # Few-Shot Prompting
-    system_prompt = """
+        """
+
+    # Construct the system prompt using few-shot examples and the user prompt
+    system_prompt = f"""
         Create an engaging twitter tweet for Microsoft company.
         PROMPT: {prompt}
 
@@ -44,13 +70,13 @@ def create_tweet(prompt):
         Example Tweets:
         {top5_tweets}
 
-        Create the tweet compare it with the example tweets and predict and explain why and how this tweet will perform well comparing to given examples.
+        Create the tweet, compare it with the example tweets, and predict and explain why and how this tweet will perform well compared to the given examples. The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
+    """
 
-        """
-    
+    # Generate tweet using Gemini model
     out = execute_gemini_for_tweet_creation(prompt=system_prompt)
 
-    # out = compare_tweets_from_two_models(prompt=system_prompt)
+    # Optional: Uncomment to inspect and save output
     '''
     tweet = out['tweet']
     prediction = out['prediction']
@@ -60,22 +86,32 @@ def create_tweet(prompt):
     print("Prediction:", prediction)
     print("Explanation:", explanation)
 
-
-
+    # Save the output to a JSON file
     with open("generated_tweet.json", 'a') as file:
-        json.dump(out,file,indent=4)
+        json.dump(out, file, indent=4)
     '''
-    
+
     return out
 
 def compare_tweets(analysed_tweets):
-    engagement_type = "like"  # Can be changed to 'retweet', 'reply', etc.
+    """
+    Generates two distinct tweets using Gemini and compares them with each other
+    and with top-performing tweets from similar companies.
+
+    Parameters:
+        analysed_tweets (list): List of tweet dictionaries with engagement data.
+    """
+    engagement_type = "like"  # Engagement metric to filter by (can be changed)
+
+    # Extract top 5 tweets based on engagement score for the selected type
     top5_tweets = get_top5(analysed_tweets, engagement_type)
 
+    # Handle case where no tweets match the engagement type
     if not top5_tweets:
         print(f"No tweets found for engagement type '{engagement_type}'.")
         return
 
+    # Prompt describing the tweet generation task
     prompt = """
         Write two distinct tweets announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features.
         Focus on how it transforms workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
@@ -86,6 +122,7 @@ def compare_tweets(analysed_tweets):
         The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
     """
 
+    # Construct system prompt with few-shot examples and comparison instructions
     system_prompt = f"""
         Create two engaging tweets for Microsoft company.
         PROMPT: {prompt}
@@ -97,8 +134,10 @@ def compare_tweets(analysed_tweets):
         Compare the two generated tweets with each other and with the examples.
     """
 
+    # Call Gemini to generate and compare tweets
     out = execute_gemini_for_tweets_comparison(prompt=system_prompt)
 
+    # Extract and print results
     tweet_a = out['tweet_a']
     tweet_b = out['tweet_b']
     tweet_comparison = out['tweet_a_vs_tweet_b']
@@ -111,17 +150,29 @@ def compare_tweets(analysed_tweets):
     print("Prediction:", prediction)
     print("Explanation:", explanation)
 
+    # Save output to file
     with open("tweet_comparison.json", 'a') as file:
         json.dump(out, file, indent=4)
 
 def gemini_gpt_tweets_creation(analysed_tweets):
-    engagement_type = "like"  # Could be 'retweet', 'reply', etc.
+    """
+    Generates tweets using both Gemini and OpenAI models, compares their predictions and explanations,
+    and saves the results for benchmarking.
+
+    Parameters:
+        analysed_tweets (list): List of tweet dictionaries with engagement data.
+    """
+    engagement_type = "like"  # Engagement metric to filter by
+
+    # Extract top 5 tweets based on engagement score
     top5_tweets = get_top5(analysed_tweets, engagement_type)
 
+    # Handle case where no tweets match the engagement type
     if not top5_tweets:
         print(f"No tweets found for engagement type '{engagement_type}'.")
         return
 
+    # Prompt describing the tweet generation task
     prompt = """
         Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
 
@@ -130,6 +181,7 @@ def gemini_gpt_tweets_creation(analysed_tweets):
         The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
     """
 
+    # Construct system prompt with few-shot examples and performance prediction
     system_prompt = f"""
         Create an engaging twitter tweet for Microsoft company.
         PROMPT: {prompt}
@@ -141,10 +193,13 @@ def gemini_gpt_tweets_creation(analysed_tweets):
         Create the tweet, compare it with the example tweets, and predict and explain why and how this tweet will perform well compared to the given examples.
     """
 
-    # Generate from Gemini and OpenAI
+    # Generate tweet using Gemini
     gemini_output = execute_gemini_for_tweet_creation(prompt=system_prompt)
+
+    # Generate tweet using OpenAI
     openai_output = execute_gpt_for_tweet_creation(prompt=system_prompt)
 
+    # Parse OpenAI output safely
     try:
         openai_dict = json.loads(openai_output)
     except json.JSONDecodeError:
@@ -154,18 +209,19 @@ def gemini_gpt_tweets_creation(analysed_tweets):
             "explanation": "Failed to parse OpenAI response."
         }
 
-    # Print comparison
+    # Print Gemini output
     print("\n🔵 Gemini Tweet:")
     print("Tweet:", gemini_output["tweet"])
     print("Prediction:", gemini_output["prediction"])
     print("Explanation:", gemini_output["explanation"])
 
+    # Print OpenAI output
     print("\n🟣 OpenAI Tweet:")
     print("Tweet:", openai_dict["tweet"])
     print("Prediction:", openai_dict["prediction"])
     print("Explanation:", openai_dict["explanation"])
 
-    # Save to file
+    # Save both outputs to file for benchmarking
     with open("generated_tweet.json", 'a') as file:
         json.dump({
             "gemini": gemini_output,
@@ -177,29 +233,38 @@ def create_compare_tweets_with_gemini_models(prompt):
     Generate and compare tweets from two different Gemini models using top-performing tweet examples.
 
     Parameters:
-    - analysed_tweets (list): List of tweet dicts with engagement metrics.
-    - output_path (str): File path to append comparison results.
+    - prompt (str): The core prompt describing the tweet to be generated.
+
+    Returns:
+    - dict: A structured comparison of tweets generated by two Gemini models, including predictions and explanations.
     """
 
+    # Load previously analyzed tweets with engagement metrics
     with open('analyzed_tweets.json') as file:
         analysed_tweets = json.load(file)
 
+    # Define the engagement type to filter by (e.g., 'like', 'retweet')
     engagement_type = "like"
+
+    # Extract top 5 tweets based on engagement score for the selected type
     top5_tweets = get_top5(analysed_tweets, engagement_type)
 
+    # Handle case where no tweets match the engagement type
     if not top5_tweets:
         print(f"No tweets found for engagement type '{engagement_type}'.")
         return
 
-    if prompt=='':
+    # If no prompt is provided, use a default one focused on Microsoft 365 Copilot
+    if prompt == '':
         prompt = """
             Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
 
             Make the tweet appeal to tech-savvy professionals, developers, and productivity enthusiasts who crave smarter tools and seamless integration. Emphasize Copilot’s ability to save time, reduce cognitive load, and unlock creative potential.
 
             The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
-            """
+        """
 
+    # Construct the system prompt using few-shot examples and the user prompt
     system_prompt = f"""
         Create an engaging twitter tweet for Microsoft company.
         PROMPT: {prompt}
@@ -208,25 +273,48 @@ def create_compare_tweets_with_gemini_models(prompt):
         Example Tweets:
         {top5_tweets}
 
-        Create the tweet, compare it with the example tweets, and predict and explain why and how this tweet will perform well compared to the given examples.
+        Create the tweet, compare it with the example tweets, and predict and explain why and how this tweet will perform well compared to the given examples. The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
     """
 
+    # Define the two Gemini models to compare
     model_a = "gemini-2.0-flash"
     model_b = "gemini-2.5-flash-lite"
 
-    # Generate tweets from two Gemini models
-    output_a = execute_gemini_for_tweet_creation(prompt=system_prompt, model_name=model_a)
-    output_b = execute_gemini_for_tweet_creation(prompt=system_prompt, model_name=model_b)
+    # Define a wrapper function for each thread
+    def generate_tweet(model_name, prompt, output_container, key):
+        tweet = execute_gemini_for_tweet_creation(prompt=prompt, model_name=model_name)
+        output_container[key] = tweet
 
+    # Shared dictionary to store outputs
+    outputs = {}
+
+    # Create threads for both models
+    thread_a = Thread(target=generate_tweet, args=(model_a, system_prompt, outputs, 'model_a'))
+    thread_b = Thread(target=generate_tweet, args=(model_b, system_prompt, outputs, 'model_b'))
+
+    # Start both threads
+    thread_a.start()
+    thread_b.start()
+
+    # Wait for both threads to finish
+    thread_a.join()
+    thread_b.join()
+
+    # Access the results
+    output_a = outputs['model_a']
+    output_b = outputs['model_b']
+
+    # Extract tweet content and metadata from model A
     tweet_a = output_a.get("tweet", None)
     prediction_a = output_a.get("prediction", "unknown")
     explanation_a = output_a.get("explanation", "Failed to parse response.")
 
+    # Extract tweet content and metadata from model B
     tweet_b = output_b.get("tweet", None)
     prediction_b = output_b.get("prediction", "unknown")
     explanation_b = output_b.get("explanation", "Failed to parse response.")
 
-    # Compare tweets using another Gemini model
+    # Construct a comparison prompt to evaluate both tweets
     comparison_prompt = f"""
     You are an expert in social media engagement analysis.
 
@@ -244,75 +332,39 @@ def create_compare_tweets_with_gemini_models(prompt):
     - explanation: Reasoning referencing tone, structure, and audience alignment.
     """
 
+    # Use a third Gemini model to perform the comparison
     model_comp = "gemini-2.5-flash"
-    output = execute_gemini_for_tweets_comparison(prompt=comparison_prompt,model_name=model_comp)
-    
+    output = execute_gemini_for_tweets_comparison(prompt=comparison_prompt, model_name=model_comp)
+
+    # Extract comparison results
     tweet_comparison = output.get("tweet_a_vs_tweet_b", "Comparison not available.")
     prediction = output.get("prediction", "unknown")
     explanation = output.get("explanation", "Failed to parse explanation.")
-    
-    '''
-    # Print comparison results
-    print("\n🔵 Gemini Model A Tweet:")
-    print("Tweet:", tweet_a)
-    print("Prediction:", prediction_a)
-    print("Explanation:", explanation_a)
 
-    print("\n🟣 Gemini Model B Tweet:")
-    print("Tweet:", tweet_b)
-    print("Prediction:", prediction_b)
-    print("Explanation:", explanation_b)
-
-    print("\n🧠 Comparative Analysis:")
-    print("Comparison:", tweet_comparison)
-    print("Predicted Winner:", prediction)
-    print("Explanation:", explanation)
-
-    # Save comparison results
-    with open("compared_tweets.json", 'a') as file:
-        json.dump({
-            "model_a": {
-                "name": model_a,
-                "tweet": tweet_a,
-                "prediction": prediction_a,
-                "explanation": explanation_a
-            },
-            "model_b": {
-                "name": model_b,
-                "tweet": tweet_b,
-                "prediction": prediction_b,
-                "explanation": explanation_b
-            },
-            "comparison": {
-                "name": model_comp,
-                "tweet_a_vs_tweet_b": tweet_comparison,
-                "prediction": prediction,
-                "explanation": explanation
-            }
-        }, file, indent=4)
-    '''
+    # Structure the final output dictionary
     out = {
-    "model_a": {
-        "name": model_a,
-        "tweet": tweet_a,
-        "prediction": prediction_a,
-        "explanation": explanation_a
-    },
-    "model_b": {
-        "name": model_b,
-        "tweet": tweet_b,
-        "prediction": prediction_b,
-        "explanation": explanation_b
-    },
-    "comparison": {
-        "name": model_comp,
-        "tweet_a_vs_tweet_b": tweet_comparison,
-        "prediction": prediction,
-        "explanation": explanation
+        "model_a": {
+            "name": model_a,
+            "tweet": tweet_a,
+            "prediction": prediction_a,
+            "explanation": explanation_a
+        },
+        "model_b": {
+            "name": model_b,
+            "tweet": tweet_b,
+            "prediction": prediction_b,
+            "explanation": explanation_b
+        },
+        "comparison": {
+            "name": model_comp,
+            "tweet_a_vs_tweet_b": tweet_comparison,
+            "prediction": prediction,
+            "explanation": explanation
+        }
     }
-}
 
     return out
+
 '''
 if __name__ == '__main__':
     with open('analyzed_tweets.json') as file:
