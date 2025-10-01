@@ -1,6 +1,6 @@
 # Social Media Content Optimizer
 
-Social Content Optimizer is an open-source tool that leverages the **X (Twitter) API** and **Gemini API** to help brands like Microsoft generate and compare highly engaging, brand-authentic tweets—using real engagement data and state-of-the-art AI.
+Social Media Content Optimizer is an open-source tool that leverages the **X (Twitter) API** and **Gemini API** to help brands like Microsoft generate and compare highly engaging, brand-authentic tweets—using real engagement data and state-of-the-art AI.
 
 ---
 
