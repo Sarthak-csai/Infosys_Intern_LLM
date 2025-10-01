@@ -1,6 +1,6 @@
-# Market Content Optimizer
+# Social Media Content Optimizer
 
-Market Content Optimizer is an open-source tool that leverages the **X (Twitter) API** and **Gemini API** to help brands like Microsoft generate and compare highly engaging, brand-authentic tweets—using real engagement data and state-of-the-art AI.
+Social Content Optimizer is an open-source tool that leverages the **X (Twitter) API** and **Gemini API** to help brands like Microsoft generate and compare highly engaging, brand-authentic tweets—using real engagement data and state-of-the-art AI.
 
 ---
 
@@ -25,7 +25,7 @@ cd Infosys_Intern_LLM
 
 ### 2. Environment Configuration
 
-Market Content Optimizer requires credentials for the X (Twitter) API and the Gemini API.
+Social Media Content Optimizer requires credentials for the X (Twitter) API and the Gemini API.
 
 **Create a file named `.env` in the project root directory with the following:**
 
