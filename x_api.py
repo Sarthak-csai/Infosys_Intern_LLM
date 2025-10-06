@@ -15,22 +15,27 @@ BEARER_TOKEN = os.getenv("BEARER_TOKEN")
 
 
 # Initialize the Tweepy client using OAuth 1.0a credentials and bearer token
-twitterClient = tweepy.Client(
-    bearer_token=BEARER_TOKEN,                 # Used for app-only authentication
-    consumer_key=API_KEY,                      # Required for user authentication
-    consumer_secret=API_SECRET_KEY,
-    access_token=ACCESS_TOKEN,
-    access_token_secret=ACCESS_TOKEN_SECRET,
-    wait_on_rate_limit=True                    # Automatically waits if rate limit is hit
-)
+# twitterClient = tweepy.Client(
+#     bearer_token=BEARER_TOKEN,                 # Used for app-only authentication
+#     consumer_key=API_KEY,                      # Required for user authentication
+#     consumer_secret=API_SECRET_KEY,
+#     access_token=ACCESS_TOKEN,
+#     access_token_secret=ACCESS_TOKEN_SECRET,
+#     wait_on_rate_limit=True                    # Automatically waits if rate limit is hit
+# )
 
-# Create and post a tweet with the specified text
-response = twitterClient.create_tweet(text="Hello world from Tweepy!")
+# Authenticate using OAuth 1.0a
+auth = tweepy.OAuth1UserHandler(API_KEY, API_SECRET_KEY, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+api = tweepy.API(auth)
 
-# Check if the tweet was successfully posted
-if response.data:
-    # If successful, print the Tweet ID
-    print(f"Tweet posted successfully! Tweet ID: {response.data['id']}")
-else:
-    # If failed, print the error details
-    print("Tweet failed:", response.errors)
+# Define your tweet
+tweet_text = "Hello world! This is a tweet from Tweepy using OAuth 1.0a 🎯"
+
+try:
+    # Post the tweet
+    response = api.update_status(status=tweet_text)
+    print("✅ Tweet posted successfully!")
+    print("🆔 Tweet ID:", response.id)
+    print("📝 Tweet Text:", response.text)
+except tweepy.TweepyException as e:
+    print("❌ Failed to post tweet:", e)
