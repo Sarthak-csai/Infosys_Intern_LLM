@@ -12,3 +12,6 @@ python-dotenv
 
 # google-generativeai provides access to Gemini models for prompt-based tweet generation and analysis
 google-generativeai
+
+# deployment start command
+gunicorn
