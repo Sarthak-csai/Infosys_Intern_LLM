@@ -3,135 +3,139 @@ import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 
+# Load environment variables from .env file
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 def execute_gemini(prompt):
+    """
+    Executes a Gemini model call with a structured prompt and returns
+    a schema-compliant JSON string.
+    Parameters:
+        prompt (str): The input prompt.
+    Returns:
+        dict: The parsed JSON response from the Gemini model.
+    """
+    # Configure Gemini API
     genai.configure(api_key=GEMINI_API_KEY)
-    # Expand the prompt to instruct JSON output with desired fields
-    formatted_prompt = (
-        f"{prompt}\n\n"
-        "Respond only in JSON with these fields: "
-        "sentiment_type, engagement_type, sentiment_score, topic, reason_for_engagement, "
-        "engagement_score, keywords (as a list), target_audience. "
-        "Example:\n"
+
+    # Name of the available model (check with genai.list_models() if unsure)
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")  # Or "gemini-1.5-flash" if available
+
+    # -- Prompt Engineering: Instruct the model to return the desired JSON format --
+    schema = (
+        "Respond in valid JSON only, with the following fields:\n"
+        "  sentiment_type (one of: angry, sad, fearful, sarcastic, motivational, positive, negative, excited, neutral),\n"
+        "  engagement_type (like, reply, impression, retweet),\n"
+        "  sentiment_score (number),\n"
+        "  topic (string),\n"
+        "  reason_for_engagement (string),\n"
+        "  engagement_score (number),\n"
+        "  keywords (list of strings),\n"
+        "  target_audience (string).\n"
+        "For example:\n"
         "{\n"
         '  "sentiment_type": "positive",\n'
         '  "engagement_type": "like",\n'
-        '  "sentiment_score": 0.9,\n'
+        '  "sentiment_score": 0.87,\n'
         '  "topic": "AI advancements",\n'
-        '  "reason_for_engagement": "Exciting new tech",\n'
+        '  "reason_for_engagement": "Positive impact on society",\n'
         '  "engagement_score": 0.8,\n'
         '  "keywords": ["AI", "technology", "future"],\n'
         '  "target_audience": "developers"\n'
-        "}"
+        "}\n"
     )
+    final_prompt = f"{prompt}\n\n{schema}"
 
-    model = genai.GenerativeModel("gemini-1.5-pro")  # Or appropriate model name
-    response = model.generate_content(formatted_prompt)
+    # Generate model response
+    response = model.generate_content(final_prompt)
 
-    return json.loads(response.text)
-    
-# Usage:
-# result = execute_gemini("Analyze this tweet: ...")
+    # Safely parse JSON from response
+    try:
+        data = json.loads(response.text)
+    except Exception:
+        # If model returned extra text, extract embedded JSON
+        import re
+        matches = re.findall(r'\{.*?\}', response.text, re.DOTALL)
+        data = json.loads(matches[0]) if matches else {"error": "Failed to parse JSON."}
+    return data
 
-print(execute_gemini("Wrtie a tweet on Copilot"))
+# Example usage:
+# result = execute_gemini("Analyze this tweet: 'I'm learning AI with Python every day!'")
+# print(result)
 
-'''
 def execute_gemini_for_tweet_creation(prompt, model_name="gemini-2.5-flash-lite"):
-    """ Generates a single tweet using the specified Gemini model and returns structured output.
+    """
+    Generates a single tweet using the specified Gemini model and returns structured output.
+
     Parameters:
         prompt (str): The input prompt describing the tweet to be generated.
-        model_name (str): The Gemini model to use (default is 'gemini-2.5-flash-lite').
+        model_name (str): The Gemini model to use (default: see `genai.list_models()`).
+
     Returns:
-        dict: A dictionary containing the generated tweet, prediction, and explanation. 
+        dict: Dictionary containing the generated tweet, prediction, and explanation.
     """
-    # Initialize Gemini client with API key
-    client = genai.Client(api_key=GEMINI_API_KEY)
-    # Format the user prompt into Gemini-compatible content structure
-    contents = [
-        types.Content(
-            role="user",  # Indicates this is a user message
-            parts=[
-                types.Part.from_text(text=prompt),  # Convert prompt to Gemini-compatible format
-            ],
-        ),
-    ]
-    # Define the expected structure of the response using a schema
-    generate_content_config = types.GenerateContentConfig(
-        thinking_config=types.ThinkingConfig(thinking_budget=0),  # No extra compute budget
-        response_mime_type="application/json",  # Expect structured JSON output
-        response_schema=genai.types.Schema(
-            type=genai.types.Type.OBJECT,
-            required=["tweet", "prediction", "explanation"],  # Required fields in the response
-            properties={
-                "tweet": genai.types.Schema(type=genai.types.Type.STRING),         # The generated tweet
-                "prediction": genai.types.Schema(type=genai.types.Type.STRING),     # Engagement prediction
-                "explanation": genai.types.Schema(type=genai.types.Type.STRING),    # Rationale for prediction
-            },
-        ),
-    )
-    # Call the Gemini model with the prompt and configuration
-    result = client.models.generate_content(
-        model=model_name,
-        contents=contents,
-        config=generate_content_config,
-    )
-    # Parse and return the structured JSON response
-    return json.loads(result.text)
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel(model_name)
 
-def execute_gemini_for_tweets_comparison(prompt: str, model_name="gemini-2.5-flash") -> str:
+    full_prompt = (
+        f"{prompt}\n\n"
+        "Respond only in JSON with these fields:\n"
+        "tweet (the generated tweet),\n"
+        "prediction (engagement prediction),\n"
+        "explanation (rationale for prediction).\n"
+        "For example:\n"
+        '{\n'
+        '  "tweet": "Exciting news in AI today!",\n'
+        '  "prediction": "High engagement",\n'
+        '  "explanation": "AI is trending and the tweet is concise."\n'
+        '}'
+    )
 
+    response = model.generate_content(full_prompt)
+    try:
+        return json.loads(response.text)
+    except Exception:
+        import re
+        matches = re.findall(r'\{.*?\}', response.text, re.DOTALL)
+        return json.loads(matches[0]) if matches else {"error": "Failed to parse JSON."}
+
+def execute_gemini_for_tweets_comparison(prompt, model_name="gemini-2.5-flash"):
     """
     Generates two tweets and compares them using the specified Gemini model.
 
-    Assumes the prompt includes instructions for tweet generation and performance analysis.
-
     Parameters:
         prompt (str): The input prompt describing the tweet generation and comparison task.
-        model_name (str): The Gemini model to use (default is 'gemini-2.5-flash').
+        model_name (str): The Gemini model to use (default: see `genai.list_models()`).
 
     Returns:
-        dict: A dictionary containing both tweets, their comparison, prediction, and explanation.
+        dict: Dictionary containing both tweets, comparison, prediction, and explanation.
     """
+    genai.configure(api_key=GEMINI_API_KEY)
+    model = genai.GenerativeModel(model_name)
 
-    # Initialize Gemini client with API key
-    client = genai.Client(api_key=GEMINI_API_KEY)
-
-    # Format the user prompt into Gemini-compatible content structure
-    contents = [
-        types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=prompt)],
-        ),
-    ]
-
-    # Define the expected structure of the response using a schema
-    generate_content_config = types.GenerateContentConfig(
-        thinking_config=types.ThinkingConfig(thinking_budget=0),
-        response_mime_type="application/json",
-        response_schema=genai.types.Schema(
-            type=genai.types.Type.OBJECT,
-            required=[
-                "tweet_a", "tweet_b", "tweet_a_vs_tweet_b", "prediction", "explanation"
-            ],
-            properties={
-                "tweet_a": genai.types.Schema(type=genai.types.Type.STRING),             # First generated tweet
-                "tweet_b": genai.types.Schema(type=genai.types.Type.STRING),             # Second generated tweet
-                "tweet_a_vs_tweet_b": genai.types.Schema(type=genai.types.Type.STRING),  # Comparative analysis
-                "prediction": genai.types.Schema(type=genai.types.Type.STRING),          # Which tweet will perform better
-                "explanation": genai.types.Schema(type=genai.types.Type.STRING),         # Rationale for prediction
-            },
-        ),
+    full_prompt = (
+        f"{prompt}\n\n"
+        "Respond only in JSON with these fields:\n"
+        "tweet_a (first generated tweet),\n"
+        "tweet_b (second generated tweet),\n"
+        "tweet_a_vs_tweet_b (comparative analysis),\n"
+        "prediction (which tweet will perform better),\n"
+        "explanation (rationale for prediction).\n"
+        "For example:\n"
+        '{\n'
+        '  "tweet_a": "...",\n'
+        '  "tweet_b": "...",\n'
+        '  "tweet_a_vs_tweet_b": "...",\n'
+        '  "prediction": "...",\n'
+        '  "explanation": "..."\n'
+        '}'
     )
 
-    # Call the Gemini model with the prompt and configuration
-    result = client.models.generate_content(
-        model=model_name,
-        contents=contents,
-        config=generate_content_config,
-    )
-
-    # Parse and return the structured JSON response
-    return json.loads(result.text)
-'''
+    response = model.generate_content(full_prompt)
+    try:
+        return json.loads(response.text)
+    except Exception:
+        import re
+        matches = re.findall(r'\{.*?\}', response.text, re.DOTALL)
+        return json.loads(matches[0]) if matches else {"error": "Failed to parse JSON."}
