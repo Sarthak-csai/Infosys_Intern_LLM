@@ -63,6 +63,9 @@ Go to [http://localhost:5000](http://localhost:5000) in your browser.
 
 ---
 
+## Deployed Application
+
+
 ## 💻 Usage
 
 - Use the **Generate Tweet** tab to create highly engaging, on-brand tweets.

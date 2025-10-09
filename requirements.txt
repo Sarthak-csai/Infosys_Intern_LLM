@@ -15,3 +15,6 @@ google-generativeai
 
 # deployment start command
 gunicorn
+
+# future scope
+openai
