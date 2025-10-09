@@ -65,6 +65,7 @@ Go to [http://localhost:5000](http://localhost:5000) in your browser.
 
 ## Deployed Application
 
+https://infosys-intern-llm.onrender.com
 
 ## 💻 Usage
 
