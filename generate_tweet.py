@@ -51,16 +51,6 @@ def create_tweet(prompt):
         print(f"No tweets found for engagement type '{engagement_type}'.")
         return None
 
-    # If prompt is empty, use a default prompt about Microsoft 365 Copilot
-    if prompt == '':
-        prompt = """
-            Write a tweet announcing the launch of Microsoft 365 Copilot, highlighting its AI-powered productivity features. Focus on how it transforms everyday workflows in Word, Excel, PowerPoint, and Teams by automating tasks, summarizing meetings, generating content, and analyzing data.
-
-            Make the tweet appeal to tech-savvy professionals, developers, and productivity enthusiasts who crave smarter tools and seamless integration. Emphasize Copilot’s ability to save time, reduce cognitive load, and unlock creative potential.
-
-            The tone should be futuristic, empowering, and crisp — something that makes users feel like they’re stepping into the next era of intelligent work.
-        """
-
     # Construct the system prompt using few-shot examples and the user prompt
     system_prompt = f"""
         Create an engaging twitter tweet for Microsoft company.
@@ -75,22 +65,6 @@ def create_tweet(prompt):
 
     # Generate tweet using Gemini model
     out = execute_gemini_for_tweet_creation(prompt=system_prompt)
-
-    '''
-    # Extract generated output
-    tweet = out['tweet']
-    prediction = out['prediction']
-    explanation = out['explanation']
-
-    # Print generated output
-    print("Generated Tweet:", tweet)
-    print("Prediction:", prediction)
-    print("Explanation:", explanation)
-
-    # Save the output to a JSON file
-    with open("generated_tweet.json", 'w') as file:
-        json.dump(out, file, indent=4)
-    '''
 
     return out
 

@@ -97,20 +97,15 @@ def execute_gemini(prompt):
     return result.text
 
 def execute_gemini_for_tweet_creation(prompt, model_name="gemini-2.5-flash-lite"):
-    """
-    Generates a single tweet using the specified Gemini model and returns structured output.
-
+    """ Generates a single tweet using the specified Gemini model and returns structured output.
     Parameters:
         prompt (str): The input prompt describing the tweet to be generated.
         model_name (str): The Gemini model to use (default is 'gemini-2.5-flash-lite').
-
     Returns:
-        dict: A dictionary containing the generated tweet, prediction, and explanation.
+        dict: A dictionary containing the generated tweet, prediction, and explanation. 
     """
-
     # Initialize Gemini client with API key
     client = genai.Client(api_key=GEMINI_API_KEY)
-
     # Format the user prompt into Gemini-compatible content structure
     contents = [
         types.Content(
@@ -120,12 +115,6 @@ def execute_gemini_for_tweet_creation(prompt, model_name="gemini-2.5-flash-lite"
             ],
         ),
     ]
-
-    # Optional tools (currently unused, but placeholder for future extensions)
-    tools = [
-        # types.Tool(googleSearch=types.GoogleSearch()),
-    ]
-
     # Define the expected structure of the response using a schema
     generate_content_config = types.GenerateContentConfig(
         thinking_config=types.ThinkingConfig(thinking_budget=0),  # No extra compute budget
@@ -140,14 +129,12 @@ def execute_gemini_for_tweet_creation(prompt, model_name="gemini-2.5-flash-lite"
             },
         ),
     )
-
     # Call the Gemini model with the prompt and configuration
     result = client.models.generate_content(
         model=model_name,
         contents=contents,
         config=generate_content_config,
     )
-
     # Parse and return the structured JSON response
     return json.loads(result.text)
 
